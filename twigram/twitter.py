@@ -213,7 +213,6 @@ def video_tweet_handler(data: dict, show_size: bool = False) -> dict:
                 "resolution": resolution,
                 "url": link,
                 "size": video_size["size"],
-                "size": video_size["size"],
             })
         else:
             resolution = quality.split("x")[1] + "p"
