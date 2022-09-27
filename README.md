@@ -1,6 +1,11 @@
 # TwiGram
 Simple python package for download tweet from Twitter
 
+## Install package
+```console
+pip install TwiGram
+```
+
 ## Examples of How To Use 
 
 Get tweet info

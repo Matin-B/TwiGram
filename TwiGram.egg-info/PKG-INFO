@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: TwiGram
-Version: 1.0.0
+Version: 1.0.2
 Summary: Simple python package for download tweet from Twitter
 Author: Matin Baloochestani (Matin-B)
 Author-email: MatiinBaloochestani@Gmail.com
@@ -17,6 +17,11 @@ License-File: LICENSE
 
 # TwiGram
 Simple python package for download tweet from Twitter
+
+## Install package
+```console
+pip install TwiGram
+```
 
 ## Examples of How To Use 
 
