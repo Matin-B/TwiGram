@@ -1,3 +1,4 @@
+import contextlib
 import requests
 import re
 
@@ -41,7 +42,7 @@ def check_content_size(url):
     }
 
 
-def edit_tweet_text(tweet_text: str, entities: dict) -> str:
+def edit_tweet_text(tweet_text: str, entities: dict, parent: dict) -> str:
     """
     Replace expended urls with their short version
     
@@ -54,16 +55,16 @@ def edit_tweet_text(tweet_text: str, entities: dict) -> str:
     :return: The tweet text with the media url removed.
     """
     urls = entities.get("urls")
-    user_mentions = entities.get("user_mentions")
     for url in urls:
         expanded_url = url.get("expanded_url")
         shorted_url = url.get("url")
         tweet_text = tweet_text.replace(shorted_url, expanded_url)
-    """
-    for user in user_mentions:
-        screen_name = user.get("screen_name")
-        tweet_text = tweet_text.replace(f"@{screen_name}", "", 1)
-    """
+    with contextlib.suppress(AttributeError):
+        in_reply_to_screen_name = parent.get("in_reply_to_screen_name")
+        tweet_text = tweet_text.replace(f"@{in_reply_to_screen_name}", "")
+    with contextlib.suppress(AttributeError):
+        parent_user_screen_name = parent.get("user").get("screen_name")
+        tweet_text = tweet_text.replace(f"@{parent_user_screen_name}", "")
     try:
         media_url = entities.get("media")[0].get("url")
         return tweet_text.replace(f"{media_url}", "").strip()
@@ -95,7 +96,8 @@ def text_tweet_handler(data: dict) -> dict:
 
     tweet_text = data.get("text")
     entities = data.get("entities")
-    tweet_text = edit_tweet_text(tweet_text, entities)
+    parent = data.get("parent")
+    tweet_text = edit_tweet_text(tweet_text, entities, parent)
 
     tweet_url = f"https://twitter.com/{owner_username}/status/{tweet_id_str}/"
     return {
@@ -141,7 +143,8 @@ def gif_tweet_handler(data: dict) -> dict:
 
     tweet_text = data.get("text")
     entities = data.get("entities")
-    tweet_text = edit_tweet_text(tweet_text, entities)
+    parent = data.get("parent")
+    tweet_text = edit_tweet_text(tweet_text, entities, parent)
 
     tweet_url = f"https://twitter.com/{owner_username}/status/{tweet_id_str}/"
     return {
@@ -229,7 +232,8 @@ def video_tweet_handler(data: dict, show_size: bool = False) -> dict:
 
     tweet_text = data.get("text")
     entities = data.get("entities")
-    tweet_text = edit_tweet_text(tweet_text, entities)
+    parent = data.get("parent")
+    tweet_text = edit_tweet_text(tweet_text, entities, parent)
 
     tweet_url = f"https://twitter.com/{owner_username}/status/{tweet_id_str}/"
     return {
@@ -279,7 +283,8 @@ def album_tweet_handler(data: dict) -> dict:
 
     tweet_text = data.get("text")
     entities = data.get("entities")
-    tweet_text = edit_tweet_text(tweet_text, entities)
+    parent = data.get("parent")
+    tweet_text = edit_tweet_text(tweet_text, entities, parent)
 
     tweet_url = f"https://twitter.com/{owner_username}/status/{tweet_id_str}/"
     return {
@@ -329,7 +334,8 @@ def photo_tweet_handler(data: dict) -> dict:
 
     tweet_text = data.get("text")
     entities = data.get("entities")
-    tweet_text = edit_tweet_text(tweet_text, entities)
+    parent = data.get("parent")
+    tweet_text = edit_tweet_text(tweet_text, entities, parent)
 
     tweet_url = f"https://twitter.com/{owner_username}/status/{tweet_id_str}/"
     return {
