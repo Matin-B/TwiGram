@@ -1,13 +1,10 @@
 Metadata-Version: 2.1
 Name: TwiGram
-Version: 1.1.0
+Version: 1.1.1
 Summary: Simple python package for download tweet from Twitter
-Home-page: UNKNOWN
 Author: Matin Baloochestani (Matin-B)
 Author-email: MatiinBaloochestani@Gmail.com
-License: UNKNOWN
 Keywords: python,twitter
-Platform: UNKNOWN
 Classifier: Development Status :: 1 - Planning
 Classifier: Intended Audience :: Developers
 Classifier: Programming Language :: Python :: 3
@@ -46,4 +43,3 @@ from twigram import download
 # Get tweet information from Twitter
 download("https://twitter.com/i/status/1481722124855169028", show_size=True)
 ```
-

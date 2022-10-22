@@ -33,12 +33,12 @@ def check_content_size(url):
         return {
             "status": True,
             "size": content_size,
-            "size": human_readable_filesize(content_size)
+            "human_size": human_readable_filesize(content_size)
         }
     return {
         "status": False,
         "size": content_size,
-        "size": human_readable_filesize(content_size)
+        "human_size": human_readable_filesize(content_size)
     }
 
 
@@ -216,6 +216,7 @@ def video_tweet_handler(data: dict, show_size: bool = False) -> dict:
                 "resolution": resolution,
                 "url": link,
                 "size": video_size["size"],
+                "human_size": video_size["human_size"],
             })
         else:
             resolution = quality.split("x")[1] + "p"
