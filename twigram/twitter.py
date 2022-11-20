@@ -2,8 +2,6 @@ import contextlib
 import requests
 import re
 
-BASE_URL = "https://cdn.syndication.twimg.com/tweet"
-
 headers = {
     "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
                 "(KHTML, like Gecko) Chrome/98.0.4758.80 Safari/537.36",
@@ -277,6 +275,32 @@ def album_tweet_handler(data: dict) -> dict:
     photo_count = len(photos)
     photo_urls = [photo.get("url") + "?name=large" for photo in photos]
 
+    urls = [{"type": "photo", "url": photo} for photo in photo_urls]
+    
+    if data.get("video"):
+        video = data.get("video")
+        video_variants = video.get("variants")
+        count = 0
+        for count, item in enumerate(video_variants):
+            if item['type'] == 'application/x-mpegURL':
+                video_variants.pop(count)
+        video_urls = {}
+        for item in video_variants:
+            video_url = item.get("src")
+            video_quality = video_url.split("/vid/")[-1].split("/")[0]
+            video_urls[video_quality] = video_url
+        # Sort the video urls by highest quality (dict)
+        video_urls = dict(
+            sorted(
+                video_urls.items(),
+                key=lambda x: int(x[0].split("x")[0]),
+                reverse=True,
+            )
+        )
+        video_url = list(video_urls.values())[0]
+
+        urls.append({"type": "video", "url": video_url})
+
     tweet_id_str = data.get("id_str")
     created_at = data.get("created_at")
     owner_username = data.get("user").get("screen_name")
@@ -297,8 +321,7 @@ def album_tweet_handler(data: dict) -> dict:
             "tweet_text": tweet_text,
             "created_at": created_at,
             "tweet_url": tweet_url,
-            "photo_count": photo_count,
-            "photo_urls": photo_urls,
+            "urls": urls,
             "owner_username": owner_username,
             "owner_name": owner_name,
         }
@@ -360,8 +383,8 @@ def download(url: str, show_size: bool = False) -> dict:
         raise ValueError("URL cannot be empty.")
     url = url.replace("www.", "")
     if "t.co/" in url:
-        response = requests.get(url)
         url = response.url
+        response = requests.get(url)
     regex_pattern = r"twitter.com\/.*\/status\/([0-9]*)"
     tweet_id = re.search(regex_pattern, url)
     if tweet_id is None:
@@ -375,10 +398,13 @@ def download(url: str, show_size: bool = False) -> dict:
         ("id", tweet_id),
         ("lang", "en"),
     )
-    response = requests.get(BASE_URL, headers=headers, params=parameters)
+    URL = "https://cdn.syndication.twimg.com/tweet-result"
+    response = requests.get(URL, headers=headers, params=parameters)
     if response.status_code == 200:
         data = response.json()
-        if "video" in data:
+        if "video" in data and "photos" in data:
+            return album_tweet_handler(data)
+        elif "video" in data:
             return video_tweet_handler(data, show_size)
         elif "photos" in data:
             return photo_tweet_handler(data)
