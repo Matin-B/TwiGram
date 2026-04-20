@@ -135,3 +135,5 @@ photos/
 # VSCode
 .vscode/
 vscode/
+
+TwiGram.egg-info/
