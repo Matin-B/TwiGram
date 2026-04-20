@@ -97,7 +97,7 @@ def text_tweet_handler(data: dict) -> dict:
     parent = data.get("parent")
     tweet_text = edit_tweet_text(tweet_text, entities, parent)
 
-    tweet_url = f"https://twitter.com/{owner_username}/status/{tweet_id_str}/"
+    tweet_url = f"https://x.com/{owner_username}/status/{tweet_id_str}/"
     return {
         "status": True,
         "type_name": "text",
@@ -144,7 +144,7 @@ def gif_tweet_handler(data: dict) -> dict:
     parent = data.get("parent")
     tweet_text = edit_tweet_text(tweet_text, entities, parent)
 
-    tweet_url = f"https://twitter.com/{owner_username}/status/{tweet_id_str}/"
+    tweet_url = f"https://x.com/{owner_username}/status/{tweet_id_str}/"
     return {
         "status": True,
         "type_name": "gif",
@@ -192,7 +192,7 @@ def video_tweet_handler(data: dict, show_size: bool = False) -> dict:
     video_urls = {}
     for item in video_variants:
         video_url = item.get("src")
-        video_quality = video_url.split("/vid/")[-1].split("/")[0]
+        video_quality = video_url.split("/vid/avc1/")[-1].split("/")[0]
         video_urls[video_quality] = video_url
     # Sort the video urls by highest quality (dict)
     video_urls = dict(
@@ -234,7 +234,7 @@ def video_tweet_handler(data: dict, show_size: bool = False) -> dict:
     parent = data.get("parent")
     tweet_text = edit_tweet_text(tweet_text, entities, parent)
 
-    tweet_url = f"https://twitter.com/{owner_username}/status/{tweet_id_str}/"
+    tweet_url = f"https://x.com/{owner_username}/status/{tweet_id_str}/"
     return {
         "status": True,
         "status_code": 200,
@@ -311,7 +311,7 @@ def album_tweet_handler(data: dict) -> dict:
     parent = data.get("parent")
     tweet_text = edit_tweet_text(tweet_text, entities, parent)
 
-    tweet_url = f"https://twitter.com/{owner_username}/status/{tweet_id_str}/"
+    tweet_url = f"https://x.com/{owner_username}/status/{tweet_id_str}/"
     return {
         "status": True,
         "status_code": 200,
@@ -361,7 +361,7 @@ def photo_tweet_handler(data: dict) -> dict:
     parent = data.get("parent")
     tweet_text = edit_tweet_text(tweet_text, entities, parent)
 
-    tweet_url = f"https://twitter.com/{owner_username}/status/{tweet_id_str}/"
+    tweet_url = f"https://x.com/{owner_username}/status/{tweet_id_str}/"
     return {
         "status": True,
         "status_code": 200,
@@ -383,9 +383,11 @@ def download(url: str, show_size: bool = False) -> dict:
         raise ValueError("URL cannot be empty.")
     url = url.replace("www.", "")
     if "t.co/" in url:
-        url = response.url
         response = requests.get(url)
-    regex_pattern = r"twitter.com\/.*\/status\/([0-9]*)"
+        url = response.url
+    if "twitter.com/" in url:
+        url = url.replace("twitter.com/", "x.com/")
+    regex_pattern = r"x.com\/.*\/status\/([0-9]*)"
     tweet_id = re.search(regex_pattern, url)
     if tweet_id is None:
         return {
@@ -397,17 +399,30 @@ def download(url: str, show_size: bool = False) -> dict:
     parameters = (
         ("id", tweet_id),
         ("lang", "en"),
+        ("token", "4yklmjmshzi"),
+        ("d6kzi5", "3853i5ab8p5f"),
+        ("1tcm8l", "eyeesq8v7juc"),
+        ("717meh", "1j88mm2ybny8"),
+        ("nidos4", "ob44v58pa78"),
+        ("5wka4z", "9f1835chv5q5"),
+        ("zp6hrz", "zngv8x58cdy"),
     )
     URL = "https://cdn.syndication.twimg.com/tweet-result"
     response = requests.get(URL, headers=headers, params=parameters)
     if response.status_code == 200:
         data = response.json()
-        if "video" in data and "photos" in data:
-            return album_tweet_handler(data)
+        if "{\"__typename\":\"TweetTombstone\",\"tombstone\":{}}" in response.text:
+            return {
+                "status": False,
+                "status_code": response.status_code,
+                "message": "Tweet is not found. It may have been deleted or made private.",
+            }
         elif "video" in data:
             return video_tweet_handler(data, show_size)
         elif "photos" in data:
             return photo_tweet_handler(data)
+        elif "quoted_tweet" in data:
+            pass #TODO: handle quoted tweets
         return text_tweet_handler(data)
     elif response.status_code == 404:
         return {
