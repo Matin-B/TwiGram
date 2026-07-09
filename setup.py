@@ -7,9 +7,13 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '1.3.0'
-DESCRIPTION = 'Simple python package for download tweet from Twitter'
-LONG_DESCRIPTION = 'Simple python package for download tweet from Twitter'
+VERSION = "1.3.1"
+DESCRIPTION = (
+    "A lightweight, zero-authentication Python library for extracting and downloading Twitter/X content."
+)
+LONG_DESCRIPTION = (
+    "A lightweight, zero-authentication Python library for extracting and downloading Twitter/X content. Supports text, multi-photo albums, GIFs, and videos via the Twitter Syndication API."
+)
 
 # Setting up
 setup(
@@ -21,8 +25,11 @@ setup(
     long_description_content_type="text/markdown",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['requests'],
-    keywords=['python', 'twitter'],
+    install_requires=["requests"],
+    keywords=[
+        "python", "twitter", "twitter-downloader",
+        "twitter-api", "twitter-scraper", "twitter-extractor"
+    ],
     classifiers=[
         "Development Status :: 1 - Planning",
         "Intended Audience :: Developers",
