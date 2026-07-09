@@ -40,34 +40,47 @@ def check_content_size(url):
     }
 
 
-def edit_tweet_text(tweet_text: str, entities: dict, parent: dict) -> str:
+def edit_tweet_text(tweet_text: str, entities: dict, parent: dict = None) -> str:
     """
-    Replace expended urls with their short version
+    Replace expanded URLs with their short version and clean up mentions.
     
     :param tweet_text: The text of the tweet
     :type tweet_text: str
-
+    
     :param entities: A dictionary of entities that are present in the tweet
     :type entities: dict
-
-    :return: The tweet text with the media url removed.
+    
+    :param parent: A dictionary representing the parent tweet (if any)
+    :type parent: dict, optional
+    
+    :return: The tweet text with the media URL removed and short URLs expanded.
     """
-    urls = entities.get("urls")
-    for url in urls:
-        expanded_url = url.get("expanded_url")
-        shorted_url = url.get("url")
-        tweet_text = tweet_text.replace(shorted_url, expanded_url)
-    with contextlib.suppress(AttributeError):
-        in_reply_to_screen_name = parent.get("in_reply_to_screen_name")
+    parent = parent or {}
+    
+    urls = entities.get("urls", [])
+    for url_data in urls:
+        expanded_url = url_data.get("expanded_url", "")
+        shorted_url = url_data.get("url", "")
+        
+        if shorted_url and expanded_url:
+            tweet_text = tweet_text.replace(shorted_url, expanded_url)
+
+    in_reply_to_screen_name = parent.get("in_reply_to_screen_name")
+    if in_reply_to_screen_name:
         tweet_text = tweet_text.replace(f"@{in_reply_to_screen_name}", "")
-    with contextlib.suppress(AttributeError):
-        parent_user_screen_name = parent.get("user").get("screen_name")
+        
+    parent_user = parent.get("user", {})
+    parent_user_screen_name = parent_user.get("screen_name")
+    if parent_user_screen_name:
         tweet_text = tweet_text.replace(f"@{parent_user_screen_name}", "")
-    try:
-        media_url = entities.get("media")[0].get("url")
-        return tweet_text.replace(f"{media_url}", "").strip()
-    except TypeError:
-        return tweet_text.strip()
+        
+    media_list = entities.get("media", [])
+    if media_list:
+        media_url = media_list[0].get("url", "")
+        if media_url:
+            tweet_text = tweet_text.replace(media_url, "")
+            
+    return tweet_text.strip()
 
 
 def text_tweet_handler(data: dict) -> dict:
