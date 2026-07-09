@@ -192,7 +192,10 @@ def video_tweet_handler(data: dict, show_size: bool = False) -> dict:
     video_urls = {}
     for item in video_variants:
         video_url = item.get("src")
-        video_quality = video_url.split("/vid/avc1/")[-1].split("/")[0]
+        if "avc1" in video_url:
+            video_quality = video_url.split("/vid/avc1/")[-1].split("/")[0]
+        else:
+            video_quality = video_url.split("/vid/")[-1].split("/")[0]
         video_urls[video_quality] = video_url
     # Sort the video urls by highest quality (dict)
     video_urls = dict(
