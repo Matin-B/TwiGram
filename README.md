@@ -36,7 +36,7 @@ Pass a valid X (Twitter) status URL to retrieve the payload.
 ```python
 from twigram import download
 
-tweet_data = download("[https://x.com/i/status/1481722124855169028](https://x.com/i/status/1481722124855169028)")
+tweet_data = download("https://x.com/i/status/1481722124855169028")
 print(tweet_data)
 
 ```
@@ -48,7 +48,7 @@ For applications requiring preemptive storage allocation or user prompts, set `s
 ```python
 from twigram import download
 
-tweet_data = download("[https://x.com/i/status/1481722124855169028](https://x.com/i/status/1481722124855169028)", show_size=True)
+tweet_data = download("https://x.com/i/status/1481722124855169028", show_size=True)
 
 if tweet_data.get("status") and tweet_data.get("type_name") == "video":
     highest_quality = tweet_data["data"]["video_urls"][0]
