@@ -282,13 +282,11 @@ def album_tweet_handler(data: dict) -> dict:
             - tweet_text: the text of the tweet
             - created_at: the date of tweet created (UTC time)
             - tweet_url: the url of the tweet
-            - photo_count: the number of photos in the album
-            - photo_urls: a list of urls of the photos in the album
+            - urls: a list of urls of the photos and videos in the album
             - owner_username: the username of the user who posted the tweet
             - owner_name: the name of the user who posted the tweet
     """
     photos = data.get("photos")
-    photo_count = len(photos)
     photo_urls = [photo.get("url") + "?name=large" for photo in photos]
 
     urls = [{"type": "photo", "url": photo} for photo in photo_urls]
@@ -303,7 +301,10 @@ def album_tweet_handler(data: dict) -> dict:
         video_urls = {}
         for item in video_variants:
             video_url = item.get("src")
-            video_quality = video_url.split("/vid/")[-1].split("/")[0]
+            if "avc1" in video_url:
+                video_quality = video_url.split("/vid/avc1/")[-1].split("/")[0]
+            else:
+                video_quality = video_url.split("/vid/")[-1].split("/")[0]
             video_urls[video_quality] = video_url
         # Sort the video urls by highest quality (dict)
         video_urls = dict(
@@ -433,6 +434,8 @@ def download(url: str, show_size: bool = False) -> dict:
                 "status_code": response.status_code,
                 "message": "Tweet is not found. It may have been deleted or made private.",
             }
+        elif "video" in data and "photos" in data:
+            return album_tweet_handler(data)
         elif "video" in data:
             return video_tweet_handler(data, show_size)
         elif "photos" in data:
