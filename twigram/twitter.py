@@ -434,11 +434,11 @@ def download(url: str, show_size: bool = False) -> dict:
                 "status_code": response.status_code,
                 "message": "Tweet is not found. It may have been deleted or made private.",
             }
-        elif "video" in data and "photos" in data:
+        if data.get("video") and data.get("photos"):
             return album_tweet_handler(data)
-        elif "video" in data:
+        elif data.get("video"):
             return video_tweet_handler(data, show_size)
-        elif "photos" in data:
+        elif data.get("photos"):
             return photo_tweet_handler(data)
         elif "quoted_tweet" in data:
             pass #TODO: handle quoted tweets
